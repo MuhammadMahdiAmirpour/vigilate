@@ -16,7 +16,7 @@ import (
 	"strconv"
 )
 
-//Repo is the repository
+// Repo is the repository
 var Repo *DBRepo
 var app *config.AppConfig
 
@@ -131,6 +131,15 @@ func (repo *DBRepo) Host(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		printTemplateError(w, err)
 	}
+}
+
+// PostHost handles posting of host form
+func (repo *DBRepo) PostHost(w http.ResponseWriter, r *http.Request) {
+	//err := helpers.RenderPage(w, r, "host", nil, nil)
+	//if err != nil {
+	//	printTemplateError(w, err)
+	//}
+	w.Write([]byte("Posted Form"))
 }
 
 // AllUsers lists all admin users
