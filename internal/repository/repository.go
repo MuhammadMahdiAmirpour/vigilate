@@ -4,12 +4,12 @@ import "github.com/tsawler/vigilate/internal/models"
 
 // DatabaseRepo is the database repository
 type DatabaseRepo interface {
-	// preferences
+	// AllPreferences preferences
 	AllPreferences() ([]models.Preference, error)
 	SetSystemPref(name, value string) error
 	InsertOrUpdateSitePreferences(pm map[string]string) error
 
-	// users and authentication
+	// GetUserById users and authentication
 	GetUserById(id int) (models.User, error)
 	InsertUser(u models.User) (int, error)
 	UpdateUser(u models.User) error

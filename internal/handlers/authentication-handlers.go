@@ -3,6 +3,7 @@ package handlers
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/tsawler/vigilate/internal/helpers"
 	"github.com/tsawler/vigilate/internal/models"
@@ -37,14 +38,14 @@ func (repo *DBRepo) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, hash, err := repo.DB.Authenticate(r.Form.Get("email"), r.Form.Get("password"))
-	if err == models.ErrInvalidCredentials {
+	if errors.Is(err, models.ErrInvalidCredentials) {
 		app.Session.Put(r.Context(), "error", "Invalid login")
 		err := helpers.RenderPage(w, r, "login", nil, nil)
 		if err != nil {
 			printTemplateError(w, err)
 		}
 		return
-	} else if err == models.ErrInactiveAccount {
+	} else if errors.Is(err, models.ErrInactiveAccount) {
 		app.Session.Put(r.Context(), "error", "Inactive account!")
 		err := helpers.RenderPage(w, r, "login", nil, nil)
 		if err != nil {

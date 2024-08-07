@@ -2,6 +2,8 @@ package dbrepo
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"github.com/tsawler/vigilate/internal/models"
 	"log"
 	"time"
@@ -18,7 +20,12 @@ func (m *postgresDBRepo) AllPreferences() ([]models.Preference, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			fmt.Println("Error ", err)
+		}
+	}(rows)
 
 	var preferences []models.Preference
 

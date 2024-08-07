@@ -3,6 +3,8 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"github.com/tsawler/vigilate/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"log"
@@ -21,7 +23,12 @@ func (m *postgresDBRepo) AllUsers() ([]*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(rows)
 
 	var users []*models.User
 
@@ -94,7 +101,7 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string) (int, string, 
 
 	row := m.DB.QueryRowContext(ctx, query, email)
 	err := row.Scan(&id, &hashedPassword, &userActive)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return 0, "", models.ErrInvalidCredentials
 	} else if err != nil {
 		log.Println(err)
@@ -102,7 +109,7 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string) (int, string, 
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
-	if err == bcrypt.ErrMismatchedHashAndPassword {
+	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 		return 0, "", models.ErrInvalidCredentials
 	} else if err != nil {
 		log.Println(err)
@@ -155,7 +162,7 @@ func (m *postgresDBRepo) CheckForToken(id int, token string) bool {
 	return err == nil
 }
 
-// Insert method to add a new record to the users table.
+// InsertUser Insert method to add a new record to the users table.
 func (m *postgresDBRepo) InsertUser(u models.User) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

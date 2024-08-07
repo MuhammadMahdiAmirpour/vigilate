@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/gob"
+	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/pusher/pusher-http-go"
 	"github.com/tsawler/vigilate/internal/config"
@@ -39,7 +41,12 @@ func main() {
 
 	// close channels & db when application ends
 	defer close(app.MailQueue)
-	defer app.DB.SQL.Close()
+	defer func(SQL *sql.DB) {
+		err := SQL.Close()
+		if err != nil {
+			fmt.Println("Error closing SQL connection:", err)
+		}
+	}(app.DB.SQL)
 
 	// print info
 	log.Printf("******************************************")
